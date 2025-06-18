@@ -3,7 +3,6 @@ on:
   # Allows this workflow to be triggered manually
   workflow_dispatch:  
     inputs:
-      environment:
       branch_name:
         description: 'branch name'
         required: false
@@ -22,43 +21,45 @@ jobs:
 
       - name: Get branch name and commit SHA
         run: |
-          # extract commmit number 
-          COMMIT_SHORT=${GITHUB_SHA:0:7}
-          echo "Commit shortened-sha: $COMMIT_SHORT"
-          echo "commit_short=$COMMIT_SHORT" >> $GITHUB_ENV
+          COMMIT_LONG=$(git rev-parse HEAD)
+          COMMIT_SHORT=${COMMIT_LONG:0:7}
+          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
-          # extract branch name
-          BRANCH_NAME=${GITHUB_REF##*/}
+          echo "Commit sha: $COMMIT_LONG"
+          echo "Commit sha shortened: $COMMIT_SHORT"
           echo "Branch name: $BRANCH_NAME"
+
+          echo "commit_long=$COMMIT_LONG" >> $GITHUB_ENV
+          echo "commit_short=$COMMIT_SHORT" >> $GITHUB_ENV
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Check for tag
         run: |
-          VERSION_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
-          echo "${VERSION_TAG}"
+          git fetch --tags
+          VERSION_TAG=$(git tag --contains ${{ env.commit_long }} 2>/dev/null || echo "")
 
           if [ -z "$VERSION_TAG" ]; then
-            echo "Tag check: main branch not versioned"
+            echo "Tag check: branch not versioned"
             VERSION_TAG=""
           else
-            echo "Tag check: main branch version found - $VERSION_TAG"
+            echo "Tag check: branch version found - $VERSION_TAG"
           fi
           echo "version_tag=${VERSION_TAG}" >> $GITHUB_ENV
 
-      ## - name: Log in to Docker Hub
-      ##   uses: docker/login-action@v2
-      ##   with:
-      ##     username: ${{ secrets.DOCKER_USERNAME }}
-      ##     password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      ## - name: Build and push Docker image
-      ##   run: |
-      ##     if [ -n "${{ env.version_tag }}" ]; then
-      ##       echo "Building Docker ${{ env.version_tag }}"
-      ##       docker build . -t kahshiu/k-node-express:${{ env.version_tag }}
-      ##       docker push kahshiu/k-node-express:${{ env.version_tag }}
-      ##     else
-      ##       echo "Building Docker ${{ env.branch_name }}-${{ env.commit_short }}"
-      ##       docker build . -t kahshiu/k-node-express:${{ env.branch_name }}-${{ env.commit_short }}
-      ##       docker push kahshiu/k-node-express:${{ env.branch_name }}-${{ env.commit_short }}
-      ##     fi
+      - name: Build and push Docker image
+        run: |
+          if [ -n "${{ env.version_tag }}" ]; then
+            echo "Building Docker ${{ env.version_tag }}"
+            docker build . -t kahshiu/k-node-express:${{ env.version_tag }}
+            docker push kahshiu/k-node-express:${{ env.version_tag }}
+          else
+            echo "Building Docker ${{ env.branch_name }}-${{ env.commit_short }}"
+            docker build . -t kahshiu/k-node-express:${{ env.branch_name }}-${{ env.commit_short }}
+            docker push kahshiu/k-node-express:${{ env.branch_name }}-${{ env.commit_short }}
+          fi
