@@ -36,6 +36,9 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
             VERSION_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+
+            echo "${VERSION_TAG}"
+
             if [ -z "$VERSION_TAG" ]; then
               echo "Tag check: main branch not versioned"
               VERSION_TAG=""
