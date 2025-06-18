@@ -34,20 +34,14 @@ jobs:
 
       - name: Check for tag
         run: |
-          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            VERSION_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+          VERSION_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+          echo "${VERSION_TAG}"
 
-            echo "${VERSION_TAG}"
-
-            if [ -z "$VERSION_TAG" ]; then
-              echo "Tag check: main branch not versioned"
-              VERSION_TAG=""
-            else
-              echo "Tag check: main branch version found - $VERSION_TAG"
-            fi
-          else
-            echo "Tag check: not main branch"
+          if [ -z "$VERSION_TAG" ]; then
+            echo "Tag check: main branch not versioned"
             VERSION_TAG=""
+          else
+            echo "Tag check: main branch version found - $VERSION_TAG"
           fi
           echo "version_tag=${VERSION_TAG}" >> $GITHUB_ENV
 
