@@ -1,0 +1,5 @@
+1. customise github action to 
+- accommodate different branches (customisation via textbox)
+- rename image with suffix of branch name 
+- k-node-express:{branchname}-{commit}
+- k-node-express:{version-tag} if on master branch and current commit has version-tag
