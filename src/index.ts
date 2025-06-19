@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from "express";
 
 const app = express();
@@ -9,7 +10,8 @@ app.get("/", (req, res) => {
 
 app.get("/healthcheck", (req, res) => {
   const data = {
-    commit: "commit no: 0",
+    commit: process.env.COMMIT ?? "0",
+    environment: process.env.ENV ?? "unknown",
   };
   res.json(data);
 });

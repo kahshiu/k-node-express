@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "swc src --out-dir dist",
     "build:tsc": "tsc",
-    "start:dev": "nodemon --exec ts-node src/index.ts",
+    "start:dev": "nodemon",
     "start:prod": "node dist/src/index.js"
   },
   "keywords": [
@@ -17,6 +17,7 @@
   "author": "kahshiu",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^5.1.0"
   },
   "devDependencies": {
